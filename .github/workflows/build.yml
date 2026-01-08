@@ -26,10 +26,12 @@ jobs:
             -DOPENMP_RUNTIME=COMP \
             -DCMAKE_BUILD_TYPE=Release
           make -j$(nproc)
-          sudo make install # Добавили sudo здесь
+          sudo make install
           cd ../python
-          pip install --upgrade pip setuptools wheel
+          # Добавляем установку pybind11 здесь
+          sudo pip install --upgrade pip setuptools wheel pybind11
           python3 setup.py bdist_wheel
+
 
 
 
