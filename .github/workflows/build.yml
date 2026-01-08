@@ -28,8 +28,10 @@ jobs:
           make -j$(nproc)
           sudo make install
           cd ../python
-          sudo pip install --upgrade pip setuptools wheel pybind11 --break-system-packages
+          # Устанавливаем только pybind11, не трогая системные пакеты
+          pip install pybind11 --break-system-packages
           python3 setup.py bdist_wheel
+
 
 
 
