@@ -1,0 +1,32 @@
+name: Build CTranslate2 Wheel for Termux
+on: [push, workflow_dispatch]
+
+jobs:
+  build_wheels:
+    runs-on: ubuntu-24.04-arm # Используем нативный ARM64 раннер
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          repository: 'OpenNMT/CTranslate2'
+          submodules: 'recursive'
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake g++ libopenblas-dev python3-dev python3-pip
+
+      - name: Build C++ and Wheel
+        run: |
+          mkdir build && cd build
+          cmake .. -DWITH_MKL=OFF -DWITH_CUDA=OFF -DWITH_OPENBLAS=ON -DCMAKE_BUILD_TYPE=Release
+          make -j$(nproc) install
+          cd ../python
+          pip install --upgrade pip setuptools wheel
+          python3 setup.py bdist_wheel
+
+      - name: Upload Wheel as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ctranslate2-wheel-arm64
+          path: python/dist/*.whl
