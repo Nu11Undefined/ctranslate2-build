@@ -25,10 +25,12 @@ jobs:
             -DWITH_OPENBLAS=ON \
             -DOPENMP_RUNTIME=COMP \
             -DCMAKE_BUILD_TYPE=Release
-          make -j$(nproc) install
+          make -j$(nproc)
+          sudo make install # Добавили sudo здесь
           cd ../python
           pip install --upgrade pip setuptools wheel
           python3 setup.py bdist_wheel
+
 
 
       - name: Upload Wheel as Artifact
