@@ -19,11 +19,17 @@ jobs:
       - name: Build C++ and Wheel
         run: |
           mkdir build && cd build
-          cmake .. -DWITH_MKL=OFF -DWITH_CUDA=OFF -DWITH_OPENBLAS=ON -DCMAKE_BUILD_TYPE=Release
+          cmake .. \
+            -DWITH_MKL=OFF \
+            -DWITH_CUDA=OFF \
+            -DWITH_OPENBLAS=ON \
+            -DOPENMP_RUNTIME=COMP \
+            -DCMAKE_BUILD_TYPE=Release
           make -j$(nproc) install
           cd ../python
           pip install --upgrade pip setuptools wheel
           python3 setup.py bdist_wheel
+
 
       - name: Upload Wheel as Artifact
         uses: actions/upload-artifact@v4
