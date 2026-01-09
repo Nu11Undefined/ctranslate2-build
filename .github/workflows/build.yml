@@ -18,19 +18,15 @@ jobs:
 
       - name: Build C++ and Wheel
         run: |
-          mkdir build && cd build
-          cmake .. \
-            -DWITH_MKL=OFF \
-            -DWITH_CUDA=OFF \
-            -DWITH_OPENBLAS=ON \
-            -DOPENMP_RUNTIME=COMP \
-            -DCMAKE_BUILD_TYPE=Release
-          make -j$(nproc)
-          sudo make install
-          cd ../python
-          # Устанавливаем только pybind11, не трогая системные пакеты
-          pip install pybind11 --break-system-packages
+          # Устанавливаем зависимости для сборки расширения
+          pip install pybind11 cmake --break-system-packages
+
+          # Собираем сразу Python-пакет (он сам запустит CMake для C++ части)
+          cd python
+          # Прямое указание параметров CMake для скрипта установки
+          CMAKE_ARGS="-DWITH_MKL=OFF -DWITH_CUDA=OFF -DWITH_OPENBLAS=ON -DOPENMP_RUNTIME=COMP" \
           python3 setup.py bdist_wheel
+
 
 
 
