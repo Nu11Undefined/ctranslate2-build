@@ -18,14 +18,30 @@ jobs:
 
       - name: Build C++ and Wheel
         run: |
-          # Устанавливаем зависимости для сборки расширения
-          pip install pybind11 cmake --break-system-packages
+          # 1. Сборка и установка основной C++ библиотеки в систему раннера
+          mkdir build && cd build
+          cmake .. \
+            -DWITH_MKL=OFF \
+            -DWITH_CUDA=OFF \
+            -DWITH_OPENBLAS=ON \
+            -DOPENMP_RUNTIME=COMP \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/usr/local
+          make -j$(nproc)
+          sudo make install
+          cd ..
 
-          # Собираем сразу Python-пакет (он сам запустит CMake для C++ части)
+          # 2. Подготовка окружения для Python
+          pip install pybind11 --break-system-packages
+
+          # 3. Сборка Wheel с указанием путей к установленной либе
           cd python
-          # Прямое указание параметров CMake для скрипта установки
-          CMAKE_ARGS="-DWITH_MKL=OFF -DWITH_CUDA=OFF -DWITH_OPENBLAS=ON -DOPENMP_RUNTIME=COMP" \
+          export CFLAGS="-I/usr/local/include"
+          export LDFLAGS="-L/usr/local/lib"
+          export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
+          
           python3 setup.py bdist_wheel
+
 
 
 
