@@ -18,7 +18,6 @@ jobs:
 
       - name: Build C++ and Wheel
         run: |
-          # 1. Сборка и установка основной C++ библиотеки в систему раннера
           mkdir build && cd build
           cmake .. \
             -DWITH_MKL=OFF \
@@ -26,21 +25,17 @@ jobs:
             -DWITH_OPENBLAS=ON \
             -DOPENMP_RUNTIME=COMP \
             -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc" \
             -DCMAKE_INSTALL_PREFIX=/usr/local
           make -j$(nproc)
           sudo make install
-          cd ..
-
-          # 2. Подготовка окружения для Python
-          pip install pybind11 --break-system-packages
-
-          # 3. Сборка Wheel с указанием путей к установленной либе
-          cd python
-          export CFLAGS="-I/usr/local/include"
-          export LDFLAGS="-L/usr/local/lib"
-          export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
           
+          cd ../python
+          export CFLAGS="-I/usr/local/include"
+          export LDFLAGS="-L/usr/local/lib -static-libstdc++"
           python3 setup.py bdist_wheel
+
 
 
 
