@@ -18,32 +18,32 @@ jobs:
 
       - name: Build C++ and Wheel
         run: |
-          # 1. Устанавливаем зависимости СРАЗУ для всех
-          pip install --user pybind11 cmake
+          # 1. Установка зависимостей
+          pip install pybind11 cmake
           
-          # 2. Сборка C++ части
+          # 2. Сборка статической C++ библиотеки
           mkdir build && cd build
           cmake .. \
             -DWITH_MKL=OFF \
             -DWITH_CUDA=OFF \
             -DWITH_OPENBLAS=ON \
-            -DOPENMP_RUNTIME=COMP \
-            -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_SHARED_LIBS=OFF \
-            -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+            -DCMAKE_BUILD_TYPE=Release
           make -j$(nproc)
-          # Устанавливаем локально, чтобы не возиться с sudo и путями
-          make install DESTDIR=../install_dir
+          # Установка в локальную временную папку
+          make install DESTDIR=$(pwd)/../install_dir
           cd ..
 
-          # 3. Сборка Python Wheel
+          # 3. Сборка Python расширения
           cd python
-          # Указываем Python, где искать pybind11 и наши скомпилированные файлы
-          export PYTHONPATH="${PYTHONPATH}:$(python3 -m pybind11 --abspath)/.."
+          # Указываем пути к нашей собранной статической либе
           export CFLAGS="-I../install_dir/usr/local/include"
-          export LDFLAGS="-L../install_dir/usr/local/lib"
+          export LDFLAGS="-L../install_dir/usr/local/lib -lctranslate2 -lopenblas"
           
+          # Важно: заставляем скрипт думать, что библиотека уже в системе
           python3 setup.py bdist_wheel
+
 
 
 
