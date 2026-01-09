@@ -18,6 +18,10 @@ jobs:
 
       - name: Build C++ and Wheel
         run: |
+          # 1. Устанавливаем зависимости СРАЗУ для всех
+          pip install --user pybind11 cmake
+          
+          # 2. Сборка C++ части
           mkdir build && cd build
           cmake .. \
             -DWITH_MKL=OFF \
@@ -26,15 +30,21 @@ jobs:
             -DOPENMP_RUNTIME=COMP \
             -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_SHARED_LIBS=OFF \
-            -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc" \
-            -DCMAKE_INSTALL_PREFIX=/usr/local
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON
           make -j$(nproc)
-          sudo make install
+          # Устанавливаем локально, чтобы не возиться с sudo и путями
+          make install DESTDIR=../install_dir
+          cd ..
+
+          # 3. Сборка Python Wheel
+          cd python
+          # Указываем Python, где искать pybind11 и наши скомпилированные файлы
+          export PYTHONPATH="${PYTHONPATH}:$(python3 -m pybind11 --abspath)/.."
+          export CFLAGS="-I../install_dir/usr/local/include"
+          export LDFLAGS="-L../install_dir/usr/local/lib"
           
-          cd ../python
-          export CFLAGS="-I/usr/local/include"
-          export LDFLAGS="-L/usr/local/lib -static-libstdc++"
           python3 setup.py bdist_wheel
+
 
 
 
