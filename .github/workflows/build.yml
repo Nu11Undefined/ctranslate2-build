@@ -27,9 +27,13 @@ jobs:
             -DWITH_MKL=OFF \
             -DWITH_CUDA=OFF \
             -DWITH_OPENBLAS=ON \
+            -DOPENMP_RUNTIME=COMP \
+            -DWITH_OPENMP=ON \
+            -DOPENMP_LIB=gomp \
+            -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_SHARED_LIBS=OFF \
-            -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-            -DCMAKE_BUILD_TYPE=Release
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+
           make -j$(nproc)
           # Установка в локальную временную папку
           make install DESTDIR=$(pwd)/../install_dir
